@@ -2,9 +2,9 @@ unit module Nes::Rom;
 use BinaryParse;
 
 class Rom is export {
-    has Buf[uint8] $.prg;
-    has Buf[uint8] $.chr;
-    has Int        $.mapper;
+    has buf8       $.prg;
+    has buf8       $.chr;
+    has byte       $.mapper;
     has Bool       $.vertical-mirror;
 }
 
