@@ -37,15 +37,15 @@ class RomParsing does BinaryParsing {
         my $mapper = ($mapper-high4 +< 4) +| $mapper-low4;
 
         ### maybe trainer:             512 bytes ###
-        my $trainer = self.many-bytes($trainer-present * (2 +< 9));
+        my $trainer = self.many-bytes($trainer-present * (1 +< 9));
         ### PRG:             count * 16384 bytes ###
-        my $prg     = self.many-bytes($prg-count * (2 +< 13));
+        my $prg     = self.many-bytes($prg-count * (1 +< 14));
         ### CHR:              count * 8192 bytes ###
-        my $chr     = self.many-bytes($chr-count * (2 +< 12));
+        my $chr     = self.many-bytes($chr-count * (1 +< 13));
         ### maybe play-choice inst:   8192 bytes ###
-        my $play-choice-inst = self.many-bytes($play-choice-present * (2 +< 12));
+        my $play-choice-inst = self.many-bytes($play-choice-present * (1 +< 13));
         ### maybe play-choice prom: 2 * 16 bytes ###
-        my $play-choice-prom = self.many-bytes($play-choice-present * (2 +< 5));
+        my $play-choice-prom = self.many-bytes($play-choice-present * (1 +< 6));
 
         return Rom.new(
             prg => $prg,
