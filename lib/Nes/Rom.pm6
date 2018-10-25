@@ -4,7 +4,7 @@ use BinaryParse;
 class Rom is export {
     has Buf[uint8] $.prg;
     has Buf[uint8] $.chr;
-    has uint8      $.mapper;
+    has Int        $.mapper;
     has Bool       $.vertical-mirror;
 }
 
@@ -27,14 +27,14 @@ class RomParsing does BinaryParsing {
         my $trainer-present = nth-bit($flag6, 2);
         my $four-screen     = nth-bit($flag6, 3);
         my $mapper-low4     = byte-range($flag6, 4, 4);
-        
+
         #-- parse falg 7 --#
         my $vs-uni              = nth-bit($flag7, 0);
         my $play-choice-present = nth-bit($flag7, 1);
         my $nes2                = byte-range($flag7, 2, 2);
         my $mapper-high4        = byte-range($flag7, 4, 4);
 
-        my $mapper = $mapper-high4 +< 4 +& $mapper-low4;
+        my $mapper = ($mapper-high4 +< 4) +| $mapper-low4;
 
         ### maybe trainer:             512 bytes ###
         my $trainer = self.many-bytes($trainer-present * (2 +< 9));

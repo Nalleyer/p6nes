@@ -1,5 +1,7 @@
 unit module Nes::BinaryParse;
 
+#..... no mutable byte type in perl6, using Int instead .....#
+
 #### utils ####
 sub buf-from-path(Str:D $path) is export {
     $path.IO.slurp(:close, :bin)
@@ -7,24 +9,22 @@ sub buf-from-path(Str:D $path) is export {
 
 # 76543210
 # 0th is the lowest bit
-sub nth-bit(uint8:D $byte, Int:D $n where 0 <= $n < 8 --> uint8) is export {
+sub nth-bit(Int:D $byte, Int:D $n where 0 <= $n < 8 --> Int) is export {
     $byte +> $n +& 0x1
 }
 
 sub byte-range(
-   uint8:D $byte
+   Int:D $byte
  , Int:D $n where 0 <= $n < 8
  , Int:D $len where 0 < $len <= 8
- --> uint8)
+ --> Int)
  is export {
-    my uint8 $result = 0;
-    for ^$len {
-        $result = $result +& (nth-bit($byte, $n + $_) +< $_)
-    }
+    my Int $result = 0;
+    $result = $result +| (nth-bit($byte, $n + $_) +< $_) for ^$len;
     $result
 }
 
-sub say-byte(uint8:D $byte) is export {
+sub say-byte(Int:D $byte) is export {
     say $byte.fmt("%08b");
 }
 
@@ -53,10 +53,12 @@ role BinaryParsing is export {
 
     submethod many-bytes($n, :$unsafe) {
         self.assert-elems($n, :$unsafe);
-        my $bytes = Buf[uint8].new;
-        for ^$n {
-            $bytes.push($!bytes.shift)
-        }
+        my $bytes = $!bytes.subbuf-rw(0, $n);
+        $!bytes.shift for ^$n;
+        #my $bytes = Buf[uint8].new;
+        #for ^$n {
+        #    $bytes.push($!bytes.shift)
+        #}
         $bytes
     }
     submethod p-many-bytes($n, :$unsafe) { self.assert-elems($n, :$unsafe); $!bytes.subbuf(0, $n) }
