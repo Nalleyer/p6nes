@@ -1,5 +1,6 @@
 unit module Nes::Rom;
 use BinaryParse;
+use BinaryUtil;
 
 class Rom is export {
     has buf8       $.prg;

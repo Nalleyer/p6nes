@@ -1,30 +1,6 @@
 unit module Nes::BinaryParse;
 
-#### utils ####
-sub buf-from-path(Str:D $path) is export {
-    $path.IO.slurp(:close, :bin)
-}
-
-# 76543210
-# 0th is the lowest bit
-sub nth-bit(byte:D $byte, Int:D $n where 0 <= $n < 8 --> byte) is export {
-    $byte +> $n +& 0x1
-}
-
-sub byte-range(
-   byte:D $byte
- , Int:D $n where 0 <= $n < 8
- , Int:D $len where 0 < $len <= 8
- --> byte)
- is export {
-    my byte $result = 0;
-    $result = $result +| (nth-bit($byte, $n + $_) +< $_) for ^$len;
-    $result
-}
-
-sub say-byte(byte:D $byte) is export {
-    say $byte.fmt("%08b");
-}
+use BinaryUtil;
 
 #### do this role and implement the parse() method to build your parser ####
 role BinaryParsing is export {
