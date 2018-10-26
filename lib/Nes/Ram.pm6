@@ -11,7 +11,7 @@ class Ram is export {
 
     # get 2 byte
     method getw(uint16:D $addr) {
-        merge-byte(get($addr), get($addr + 1))
+        merge-byte(self.get($addr), self.get($addr + 1))
     }
 
     method set(uint16:D $addr, byte:D $data) {
