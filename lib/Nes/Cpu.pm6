@@ -119,23 +119,85 @@ class Cpu is export {
     has byte   $!a;
     has byte   $!x;
     has byte   $!y;
-    has byte   $!sp = 0x01ff;
+    has byte   $!sp;
 
-    # flags
-    has byte $!c; # carry
-    has byte $!z; # zero
-    has byte $!i; # interrupt disabled
-    has byte $!d; # decimal mode
-    has byte $!b; # break executed
-    has byte $!v; # overflow
-    has byte $!s; # sign
+    # flags (or Status Register(P))
+    has byte $!c; # 0th: carry
+    has byte $!z; # 1st: zero
+    has byte $!i; # 2nd: interrupt disabled
+    has byte $!d; # 3rd: decimal mode
+    has byte $!b; # 4th: break executed
+    has byte $!u; # 5th: dummy
+    has byte $!v; # 6th: overflow
+    has byte $!s; # 7th: sign
 
     has Ram  $!ram;
     has Int  $.cycle-count;
 
     # high level
-    submethod reset() {}
-    submethod step( --> Int) {}
+    submethod BUILD() { self.power-up() }
+    submethod power-up() {
+        $!a = 0;
+        $!x = 0;
+        $!y = 0;
+
+        $!sp = 0xfd;
+        $!ram.set(0x4017, 0);
+        $!ram.set(0x4015, 0);
+        $!ram.set($_, 0) for 0x4000 .. 0x400f;
+        $!ram.set($_, 0) for 0x0000 .. 0x07ff;
+    }
+    submethod reset() {
+        $!sp -= 3;
+        $!i = 1;
+        $!ram.set(0x4015, 0);
+    }
+
+    submethod step( --> Int) {
+    }
+
+    # Status Reg
+    submethod getP(--> byte) {
+          $!c
+      +| ($!z +< 1)
+      +| ($!i +< 2)
+      +| ($!d +< 3)
+      +| ($!b +< 4)
+      +| ($!u +< 5)
+      +| ($!v +< 6)
+      +| ($!s +< 7)
+    }
+    submethod setP(byte:D $b) {
+        $!c = nth-bit($b, 0);
+        $!z = nth-bit($b, 1);
+        $!i = nth-bit($b, 2);
+        $!d = nth-bit($b, 3);
+        $!b = nth-bit($b, 4);
+        $!u = nth-bit($b, 5);
+        $!v = nth-bit($b, 6);
+        $!s = nth-bit($b, 7);
+    }
+
+    # ram wraper
+    submethod load($addr) { $!ram.get($addr) }
+    submethod loadw($addr) { $!ram.getw($addr) }
+    submethod store($addr, $byte) { $!ram.set($addr, $byte) }
+    # stack
+    submethod spad($offset? = 0) { ($!sp + $offset) |+ 0x0100 }
+    submethod push($byte) {
+        self.store(self.spad, $byte);
+        $!sp -= 1;
+    }
+    submethod pushw($word) {
+        my ($l, $h) = split-word($word);
+        self.store(self.spad, $h);
+        self.store(self.spad(-1), $l);
+        $!sp -= 2;
+    }
+    submethod pull(--> byte) {
+        self.load(self.spad);
+        $!sp += 1;
+    }
 
     # basic op
     submethod sr() {
@@ -227,7 +289,13 @@ class Cpu is export {
     }
 
     # ops
-    submethod brk($addr, $mode) {}
+    submethod brk($addr, $mode) {
+        # here...
+        $!pc += 1;
+        self.pushw($!pc);
+        $!b = 1;
+        self.push(self.getP);
+    }
     submethod ora($addr, $mode) {}
     submethod asl($addr, $mode) {}
     submethod php($addr, $mode) {}

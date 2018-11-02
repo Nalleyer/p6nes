@@ -14,6 +14,10 @@ class Ram is export {
         merge-byte(self.get($addr), self.get($addr + 1))
     }
 
-    method set(uint16:D $addr, byte:D $data) {
+    method set(uint16:D $addr, byte:D $byte) {
+        $!ram[$addr] = $byte
     }
+
+    #method setw(uint16:D $addr, uint16:D $word) {
+    #}
 }

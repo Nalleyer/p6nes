@@ -42,7 +42,7 @@ sub merge-byte(byte:D $lowb, byte:D $highb --> uint16) is export {
     $word
 }
 
-sub split-byte(uint16:D $word) is export {
+sub split-word(uint16:D $word) is export {
     my byte $lowb = $word +& 0x00ff;
     my byte $highb = $word +> 8;
     ($lowb, $highb)
